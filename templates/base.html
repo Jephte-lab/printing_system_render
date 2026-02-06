@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Printing System</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          crossorigin="anonymous"/>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: #f8f9fa;
+        }
+
+        /* ===== LAYOUT ===== */
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 240px;
+            background: #156966;
+            color: white;
+            transition: width 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.collapsed {
+            width: 70px;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .brand {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .toggle-btn {
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            margin-top: 10px;
+        }
+
+        .sidebar-nav a,
+        .sidebar-nav .logout-btn {
+            padding: 12px 18px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.2s;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav .logout-btn:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .sidebar-nav a.active {
+            background: rgba(255,255,255,0.25);
+            font-weight: 600;
+        }
+
+        .sidebar.collapsed .brand,
+        .sidebar.collapsed .sidebar-nav span {
+            display: none;
+        }
+
+        .sidebar-nav i {
+            min-width: 18px;
+            text-align: center;
+        }
+
+        /* ===== MAIN AREA ===== */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        main.content {
+            flex: 1;
+        }
+
+        /* ===== FOOTER ===== */
+        .app-footer {
+            text-align: center;
+            padding: 12px 0;
+            font-size: 13px;
+            color: #777;
+            border-top: 1px solid #eee;
+            margin-top: 40px;
+        }
+
+        /* ===== TABLES (kept from your styles) ===== */
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .styled-table thead {
+            background-color: #156966;
+            color: white;
+        }
+
+        .styled-table th,
+        .styled-table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+        }
+
+        .styled-table tbody tr:nth-child(even) {
+            background-color: #f1f1f1;
+        }
+
+        .styled-table tbody tr:hover {
+            background-color: #e1f0ff;
+        }
+
+        button, input, select, textarea {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* ===== Action Buttons ===== */
+.action-btn {
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 5px;
+    font-size: 13px;
+    color: white;
+    margin-right: 6px;
+    display: inline-block;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+}
+
+.action-btn.view {
+    background-color: #5bc0de;
+}
+.action-btn.view:hover {
+    background-color: #31b0d5;
+}
+
+.action-btn.edit {
+    background-color: #f0ad4e;
+}
+.action-btn.edit:hover {
+    background-color: #ec971f;
+}
+
+.action-btn.delete {
+    background-color: #6c757d;
+}
+.action-btn.delete:hover {
+    background-color: #5a6268;
+}
+
+.action-btn.pdf {
+    background-color: #d9534f;
+}
+.action-btn.pdf:hover {
+    background-color: #c9302c;
+}
+.table-responsive {
+    overflow-x: auto;
+}
+/* Main content adjustments for zoom */
+.main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    min-width: 0; /* prevents overflow when zooming */
+}
+
+main.content { flex: 1; }
+
+/* Tables zoom fix */
+.table-responsive { width: 100%; overflow-x: auto; }
+.styled-table th, .styled-table td {
+    white-space: nowrap; /* prevents cell content from wrapping */
+}
+
+/* Cards & buttons zoom fix */
+.cards { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+.card { flex: 1 1 200px; max-width: 240px; min-width: 180px; text-align: center; }
+
+.action-btn {
+    flex-shrink: 0; /* prevents buttons from shrinking on zoom */
+}
+
+/* Responsive tweaks for medium/large zoom */
+@media (max-width: 1400px) {
+    .main-area { padding: 15px; }
+    .cards { gap: 15px; }
+}
+
+@media (max-width: 992px) {
+    .main-area { padding: 10px; }
+    .cards { flex-wrap: wrap; justify-content: flex-start; }
+}
+
+@media (max-width: 768px) {
+    .main-area { padding: 10px; }
+    .cards { flex-wrap: wrap; gap: 10px; justify-content: center; }
+}
+
+
+    </style>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        function openLogoutModal() {
+            document.getElementById('logout-modal').style.display = 'flex';
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('logout-modal').style.display = 'none';
+        }
+    </script>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <span class="brand">Fabulous Media</span>
+            <i class="fas fa-bars toggle-btn" onclick="toggleSidebar()"></i>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{% url 'dashboard_home' %}" class="{% if request.path == '/dashboard/' %}active{% endif %}">
+                <i class="fas fa-chart-line"></i><span>Dashboard</span>
+            </a>
+
+            <a href="{% url 'clients_list' %}" class="{% if request.path == '/clients/' %}active{% endif %}">
+                <i class="fas fa-users"></i><span>Clients</span>
+            </a>
+
+            <a href="{% url 'orders_list' %}" class="{% if request.path == '/orders/' %}active{% endif %}">
+                <i class="fas fa-file-invoice"></i><span>Orders</span>
+            </a>
+
+            {% if request.user.is_superuser %}
+            <a href="{% url 'manage_users' %}" class="{% if request.path == '/users/' %}active{% endif %}">
+                <i class="fas fa-user-cog"></i><span>Manage Staff</span>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'services_list' %}" class="{% if request.path == '/services/' %}active{% endif %}">
+                <i class="fas fa-cogs"></i><span>Services</span>
+            </a>
+
+            <div class="logout-btn" onclick="openLogoutModal()">
+                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-area">
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="app-footer">
+            © {% now "Y" %} KayaboCreative Design. All rights reserved.
+        </footer>
+    </div>
+
+</div>
+
+<!-- LOGOUT MODAL -->
+<div id="logout-modal" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.4);
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+">
+    <div style="
+        background:white;
+        padding:20px;
+        width:320px;
+        border-radius:8px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.2);
+        text-align:center;
+    ">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to log out?</p>
+
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit"
+                style="background:#d9534f; color:white; padding:8px 14px; border:none; border-radius:4px;">
+                Logout
+            </button>
+
+            <button type="button"
+                onclick="closeLogoutModal()"
+                style="margin-left:10px; padding:8px 14px;">
+                Cancel
+            </button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

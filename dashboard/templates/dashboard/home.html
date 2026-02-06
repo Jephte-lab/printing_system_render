@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com" rel="stylesheet">
+    <title>Printing System Dashboard</title>
+    <style>
+        body { font-family: 'Poppins', sans-serif; margin: 20px; background: #f4f4f4; }
+        h1 { text-align: center; margin-bottom: 30px; }
+        .cards { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 200px; text-align: center; }
+        .card h2 { margin: 10px 0; }
+        .card a { display: inline-block; margin-top: 10px; text-decoration: none; color: white; background: #156966; padding: 8px 12px; border-radius: 5px; }
+        .card a:hover { background: #156966; }
+        .section { margin-top: 40px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 8px; overflow: hidden; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #156966; color: white; }
+        .filter-form { margin-bottom: 20px; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<h1>Dashboard</h1>
+<h1 style="color:#156966; margin-bottom:10px;">Welcome, {{ request.user.first_name|default:request.user.username }}!</h1>
+<center><p style="font-size:14px; color:#333;">Glad to have you back.</p></center>
+
+
+<!-- Cards Section -->
+<div class="cards">
+    <div class="card">
+        <h3>Total Clients</h3>
+        <p>{{ total_clients_today }}</p>
+        <a href="{% url 'clients_list' %}">Manage Clients</a>
+    </div>
+    <div class="card">
+        <h3>Total Orders</h3>
+        <p>{{ total_orders_today }}</p>
+        <a href="{% url 'orders_list' %}">Manage Orders</a>
+    </div>
+    <div class="card">
+    <h3>Total Revenue</h3>
+    <p>UGX {{ total_revenue_today|floatformat:2|intcomma }}</p>
+    <a href="{% url 'orders_list' %}">View Orders</a>
+</div>
+    <div class="card">
+        <h3>Services</h3>
+        <p>{{ total_services }}</p>
+        <a href="{% url 'services_list' %}">Manage Services</a>
+    </div>
+</div>
+
+<!-- Recent Orders Table -->
+<div class="section">
+    <h2>Recent Orders</h2>
+
+    <form method="get" class="filter-form">
+        <label for="filter">Show Orders:</label>
+        <select name="filter" id="filter" onchange="this.form.submit()">
+    <option value="today" {% if filter_type == 'today' %}selected{% endif %}>Today</option>
+    <option value="week" {% if filter_type == 'week' %}selected{% endif %}>This Week</option>
+    <option value="last_week" {% if filter_type == 'last_week' %}selected{% endif %}>Last Week</option>
+    <option value="year" {% if filter_type == 'year' %}selected{% endif %}>This Year</option>
+    <option value="all" {% if filter_type == 'all' %}selected{% endif %}>All</option>
+</select>
+
+    </form>
+
+    <table class="styled-table">
+        <tr>
+            <th>ID</th>
+            <th>Client</th>
+            <th>Order Name</th>
+            <th>Date</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>PDF</th>
+        </tr>
+        {% for order in recent_orders %}
+        <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.client.name }}</td>
+            <td>{{ order.name }}</td>
+            <td>{{ order.created_at|date:"d M Y H:i" }}</td>
+            <td>UGX {{ order.total_price|floatformat:2|intcomma }}</td>
+            <td>
+    <select class="status-dropdown" data-order-id="{{ order.id }}">
+        <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="cleared" {% if order.status == 'cleared' %}selected{% endif %}>Cleared</option>
+    </select>
+</td>
+            <td><a href="/orders/{{ order.id }}/pdf/" target="_blank">PDF</a></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">No orders found</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<script>
+document.querySelectorAll('.status-dropdown').forEach(function(dropdown) {
+    dropdown.addEventListener('change', function() {
+        const orderId = this.dataset.orderId;
+        const status = this.value;
+
+        fetch("{% url 'update_order_status' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `order_id=${orderId}&status=${status}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                alert('Error updating status: ' + data.message);
+            }
+        })
+        .catch(err => alert('AJAX error: ' + err));
+    });
+});
+</script>
+<br><br>
+
+
+</body>
+</html>
+{% endblock %}
+

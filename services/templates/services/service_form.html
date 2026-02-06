@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>{{ title }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit"
+        style="background:green;color:white;padding:8px 14px;border:none;border-radius:4px;">
+        Save
+    </button>
+
+    <a href="{% url 'services_list' %}" style="margin-left:10px;">Cancel</a>
+</form>
+
+{% endblock %}

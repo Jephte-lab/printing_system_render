@@ -1,0 +1,22 @@
+<h2>Clients</h2>
+<p><a href="{% url 'dashboard_home' %}">Back to Dashboard</a></p>
+
+<a href="{% url 'client_add' %}" class="btn">+ Add Client</a>
+
+<table class="styled-table">
+    <tr>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for client in clients %}
+    <tr>
+        <td>{{ client.name }}</td>
+        <td>{{ client.phone }}</td>
+        <td>
+            <a href="{% url 'client_edit' client.id %}">Edit</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

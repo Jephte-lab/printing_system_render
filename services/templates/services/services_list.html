@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+
+<h2>Manage Services</h2>
+
+<div style="margin-bottom:15px;">
+    <a href="{% url 'service_add' %}"
+       style="background:#156966;color:white;padding:8px 14px;border-radius:4px;text-decoration:none;">
+        <i class="fa-solid fa-plus"></i> Add Service
+    </a>
+</div>
+
+<form method="get" style="margin-bottom:15px; display:flex; gap:8px;">
+    <input
+        type="text"
+        name="q"
+        placeholder="Search services..."
+        value="{{ query }}"
+        style="padding:8px; width:240px; border-radius:4px; border:1px solid #ccc;"
+    >
+
+    <button type="submit" class="action-btn view">
+        <i class="fa fa-search"></i>
+    </button>
+
+    {% if query %}
+        <a href="{% url 'services_list' %}" class="action-btn delete">
+            Clear
+        </a>
+    {% endif %}
+</form>
+
+<table class="styled-table">
+    <tr style="background:#156966; color:white;">
+        <th>Service</th>
+        <th>Description</th>
+        <th>Price</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for service in services %}
+    <tr>
+        <td>{{ service.name }}</td>
+        <td>{{ service.description|default:"-" }}</td>
+        <td>UGX {{ service.base_price|floatformat:2|intcomma }}</td>
+        <td>
+            <a href="{% url 'service_edit' service.id %}" class="action-btn edit">Edit</a>
+
+            <button
+                type="button"
+                class="action-btn delete"
+                data-id="{{ service.id }}"
+                data-name="{{ service.name }}"
+                onclick="openDeleteModal(this)">
+                Delete
+            </button>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4">No services found.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+<div id="delete-modal" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.4);
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+">
+    <div style="
+        background:white;
+        padding:20px;
+        width:360px;
+        border-radius:8px;
+        text-align:center;
+    ">
+        <h3>Confirm Delete</h3>
+        <p id="delete-text"></p>
+
+        <form id="delete-form" method="post">
+            {% csrf_token %}
+            <button type="submit"
+                style="background:#d9534f; color:white; padding:8px 14px; border:none; border-radius:4px;">
+                Delete
+            </button>
+
+            <button type="button"
+                onclick="closeDeleteModal()"
+                style="margin-left:10px; padding:8px 14px;">
+                Cancel
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function openDeleteModal(button) {
+    const serviceId = button.dataset.id;
+    const serviceName = button.dataset.name;
+
+    document.getElementById('delete-text').innerText =
+        `Are you sure you want to delete "${serviceName}"?`;
+
+    // 🔴 Match your URL pattern for delete
+    document.getElementById('delete-form').action =
+        `/services/delete/${serviceId}/`;
+
+    document.getElementById('delete-modal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+    document.getElementById('delete-modal').style.display = 'none';
+}
+</script>
+
+{% endblock %}

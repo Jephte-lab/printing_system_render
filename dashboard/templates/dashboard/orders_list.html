@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Manage Orders</h1>
+<p><a href="{% url 'dashboard_home' %}">Back to Dashboard</a></p>
+
+<style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .cards { display: flex; gap: 20px; margin-bottom: 20px; }
+        .card { padding: 15px; background: #f4f4f4; border-radius: 8px; width: 200px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        th { background: #eee; }
+        select { padding: 2px 5px; }
+        a.pdf-btn { text-decoration: none; background: #28a745; color: white; padding: 3px 6px; border-radius: 4px; }
+        .filter-form { margin-bottom: 20px; }
+    </style>
+
+<!-- Filter -->
+<form method="get" class="filter-form">
+    <label for="filter">Show Orders:</label>
+    <select name="filter" id="filter" onchange="this.form.submit()">
+        <option value="today" {% if filter_type == 'today' %}selected{% endif %}>Today</option>
+        <option value="week" {% if filter_type == 'week' %}selected{% endif %}>This Week</option>
+        <option value="year" {% if filter_type == 'year' %}selected{% endif %}>This Year</option>
+        <option value="all" {% if filter_type == 'all' %}selected{% endif %}>All</option>
+    </select>
+</form>
+<!-- Summary Cards -->
+<div class="cards">
+    <div class="card">
+        <strong>Total Revenue</strong><br>
+        UGX {{ total_revenue|floatformat:0 }}
+    </div>
+    <div class="card">
+        <strong>Total Orders</strong><br>
+        {{ total_orders }}
+    </div>
+    <div class="card">
+        <strong>Total Clients</strong><br>
+        {{ total_clients }}
+    </div>
+</div>
+<p><strong>Total Revenue: UGX {{ total_revenue }}</strong></p>
+
+<table border="1" cellpadding="5">
+    <tr>
+        <th>ID</th>
+        <th>Client</th>
+        <th>Order Name</th>
+        <th>Date</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>PDF</th>
+    </tr>
+    {% for order in orders %}
+    <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.client.name }}</td>
+        <td>{{ order.name }}</td>
+        <td>{{ order.created_at|date:"d M Y H:i" }}</td>
+        <td>{{ order.total_price }}</td>
+        <td>
+    <select class="status-dropdown" data-order-id="{{ order.id }}">
+        <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>
+            Pending
+        </option>
+        <option value="cleared" {% if order.status == 'cleared' %}selected{% endif %}>
+            Cleared
+        </option>
+    </select>
+</td>
+        <td><a href="/orders/{{ order.id }}/pdf/" target="_blank">PDF</a></td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="7">No orders found</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.status-dropdown').forEach(function (dropdown) {
+        dropdown.addEventListener('change', function () {
+            const orderId = this.dataset.orderId;
+            const status = this.value;
+
+            fetch("{% url 'update_order_status' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `order_id=${orderId}&status=${status}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    alert("Failed to update status");
+                }
+            })
+            .catch(() => alert("Network error"));
+        });
+    });
+});
+</script>
+{% endblock %}

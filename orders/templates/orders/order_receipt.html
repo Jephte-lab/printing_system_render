@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Order Receipt</title>
+    <style>
+        body { font-family: 'Poppins', sans-serif; margin: 20px; }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header img {
+            max-height: 80px;
+            display: block;
+            margin: 0 auto 10px auto;
+        }
+        h1 { margin: 5px 0; }
+        .notice {
+            font-size: 10px;
+            color: #000000;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        p { margin: 5px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+        h3 { text-align: right; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    {% load humanize %}
+    {% block content %}
+
+    <!-- Logo and Company Info -->
+<div style="text-align:center;">
+    <img src="{{ logo_url }}" alt="Company Logo" width="200" style="margin-bottom:5px;">
+    <h2 style="margin: 0; padding: 0;">{{ company_name }}</h2>
+    <p style="margin: 2px 0 0 0; padding: 0;">{{ company_address }}</p>
+</div>
+    <p><strong>Client:</strong> {{ order.client.name }}</p>
+    <p><strong>Order:</strong>
+        {% if order.name %}
+            {{ order.name }}
+        {% else %}
+            Order #{{ order.id }}
+        {% endif %}
+    </p>
+    <p><strong>Date:</strong> {{ order.created_at|date:"d M Y H:i" }}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total Price</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.service.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>UGX {{ item.unit_price|floatformat:2|intcomma }}</td>
+                <td>UGX {{ item.total_price|floatformat:2|intcomma }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Total: UGX {{ order.total_price|floatformat:2|intcomma }}</h3>
+
+    <!-- note -->
+    <div class="notice">
+        <h4>Mobile money : 0758922031<br> Name : Magala Mohammed <br>
+        Payment should be made using the credentials provided. Keep this receipt for reference.
+    </div></h4>
+
+    {% endblock %}
+</body>
+</html>

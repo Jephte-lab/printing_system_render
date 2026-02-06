@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<h2>Manage Orders</h2>
+
+<div style="margin-bottom:15px;">
+    <a href="{% url 'order_add' %}"
+       style="background:#156966;color:white;padding:8px 14px;border-radius:4px;text-decoration:none;">
+        <i class="fa-solid fa-plus"></i> Add Order
+    </a>
+</div>
+
+<!-- Filter Dropdown -->
+<form method="get" style="margin-bottom:15px; display:flex; gap:8px; align-items:center;">
+    <!-- Primary Filter -->
+    <select name="filter" style="padding:8px; border-radius:4px;" onchange="this.form.submit()">
+        <option value="" {% if not filter_type %}selected{% endif %}>-- Filter --</option>
+        <option value="today" {% if filter_type == 'today' %}selected{% endif %}>Today</option>
+        <option value="this_week" {% if filter_type == 'this_week' %}selected{% endif %}>This Week</option>
+        <option value="last_week" {% if filter_type == 'last_week' %}selected{% endif %}>Last Week</option>
+        <option value="this_year" {% if filter_type == 'this_year' %}selected{% endif %}>This Year</option>
+        <option value="all" {% if filter_type == 'all' %}selected{% endif %}>All</option>
+    </select>
+
+    <!-- Month Dropdown -->
+    <select name="month" style="padding:8px; border-radius:4px;" onchange="this.form.submit()">
+        <option value="">-- Month --</option>
+        {% for value, name in month_choices %}
+            <option value="{{ value }}" {% if selected_month == value %}selected{% endif %}>
+                {{ name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <!-- Year Dropdown -->
+    <select name="year" style="padding:8px; border-radius:4px;" onchange="this.form.submit()">
+        <option value="">-- Year --</option>
+        {% for y in year_choices %}
+            <option value="{{ y }}" {% if selected_year|stringformat:"s" == y|stringformat:"s" %}selected{% endif %}>
+                {{ y }}
+            </option>
+        {% endfor %}
+    </select>
+    {% if selected_month and selected_year %}
+<a href="{% url 'export_orders_month' %}?month={{ selected_month }}&year={{ selected_year }}"
+   style="padding:8px 14px; background:#156966; color:white; border-radius:4px; text-decoration:none;">
+   <i class="fa fa-file-excel"></i> Export Excel
+</a>
+{% endif %}
+
+    <!-- Search -->
+    <input type="text" name="search" placeholder="order name or client..." value="{{ search_query }}"
+           style="padding:8px; border-radius:4px; border:1px solid #ccc;">
+    <button type="submit" style="padding:8px 12px; background:#156966; color:white; border:none; border-radius:4px;">
+        <i class="fa fa-search"></i>
+    </button>
+    {% if search_query %}
+        <a href="{% url 'orders_list' %}" class="action-btn delete">Clear</a>
+    {% endif %}
+</form>
+
+
+<p><strong>Total Revenue: UGX {{ total_revenue|floatformat:2|intcomma }}</strong></p>
+
+<table class="styled-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Client</th>
+            <th>Order Name</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Total Price</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for order in orders %}
+    <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.client.name }}</td>
+        <td>{{ order.name }}</td>
+        <td>{{ order.created_at|date:"d M Y H:i" }}</td>
+        <td>
+            <select class="order-status" data-id="{{ order.id }}">
+                <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="cleared" {% if order.status == 'cleared' %}selected{% endif %}>Cleared</option>
+            </select>
+        </td>
+        <td>UGX {{ order.total_price|floatformat:2|intcomma }}</td>
+        <td>
+            <a href="{% url 'order_detail' order.id %}" class="action-btn view">View</a>
+            <a href="{% url 'order_edit' order.id %}" class="action-btn edit">Edit</a>
+            <a href="{% url 'order_pdf' order.id %}" class="action-btn pdf">PDF</a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="7" style="text-align:center; padding:20px; color:#777;">
+            😕 No orders found
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+
+</table>
+
+<!-- AJAX for status update -->
+<script>
+document.querySelectorAll('.order-status').forEach(function(select){
+    select.addEventListener('change', function(){
+        const orderId = this.dataset.id;
+        const newStatus = this.value;
+
+        fetch(`/orders/${orderId}/update_status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success){
+                console.log('Status updated');
+            } else {
+                alert('Failed to update status.');
+            }
+        })
+    });
+});
+</script>
+
+<style>
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-family: Arial, sans-serif;
+}
+
+.orders-table th, .orders-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.orders-table th {
+    background-color: #f4f4f4;
+}
+
+.orders-table tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.orders-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.orders-table select {
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+/* Action buttons in tables */
+.action-btn {
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    color: white;
+    font-size: 13px;
+    margin-right: 5px;
+    transition: 0.2s;
+}
+
+.action-btn.view {
+    background-color: #5bc0de; /* light blue */
+}
+
+.action-btn.view:hover {
+    background-color: #31b0d5;
+}
+
+.action-btn.edit {
+    background-color: #f0ad4e; /* orange */
+}
+
+.action-btn.edit:hover {
+    background-color: #ec971f;
+}
+
+.action-btn.pdf {
+    background-color: #d9534f; /* red */
+}
+
+.action-btn.pdf:hover {
+    background-color: #c9302c;
+}
+
+</style>
+
+{% endblock %}

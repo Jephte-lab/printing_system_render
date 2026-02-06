@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Clients{% endblock %}
+
+{% block content %}
+<h2>Clients</h2>
+
+<a href="{% url 'client_add' %}" style="padding:8px 12px; background:#156966; color:white; text-decoration:none; border-radius:4px;">
+   <i class="fa-solid fa-user-plus"></i>
+    Add Client
+</a> <br><br><br>
+<form method="get" style="margin-bottom:15px; display:flex; gap:8px;">
+    <input
+        type="text"
+        name="q"
+        placeholder="Search clients..."
+        value="{{ query|default:'' }}"
+        style="padding:8px; width:240px; border-radius:4px; border:1px solid #ccc;"
+    >
+
+    <button type="submit" style="
+        padding:8px 14px;
+        background:#156966;
+        color:white;
+        border:none;
+        border-radius:4px;
+        cursor:pointer;
+    ">
+        <i class="fa fa-search"></i>
+    </button>
+
+    {% if query %}
+        <a href="{% url 'clients_list' %}" style="
+            padding:8px 14px;
+            background:#218ae6;
+            color:white;
+            border-radius:4px;
+            text-decoration:none;
+        ">
+            Clear
+        </a>
+    {% endif %}
+</form>
+
+<table class="styled-table">
+    <tr style="background:#156966; color: white;">
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for client in clients %}
+    <tr>
+        <td>{{ client.name }}</td>
+        <td>{{ client.phone }}</td>
+        <td>{{ client.email }}</td>
+        <td>
+    <a href="{% url 'client_edit' client.id %}" class="action-btn edit">
+        <i class="fa fa-edit"></i> Edit
+    </a>
+
+    <button
+        class="action-btn pdf"
+        onclick="openDeleteModal('{{ client.id }}', '{{ client.name }}')">
+        <i class="fa fa-trash"></i> Delete
+    </button>
+</td>
+
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4">No clients found.</td>
+    </tr>
+    {% endfor %}
+</table>
+<br>
+<p><a href="{% url 'dashboard_home' %}" class="action-btn view">Back to Dashboard</a></p>
+
+<!-- DELETE CLIENT MODAL -->
+<div id="delete-modal" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.4);
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+">
+    <div style="
+        background:white;
+        padding:22px;
+        width:360px;
+        border-radius:10px;
+        box-shadow:0 6px 18px rgba(0,0,0,0.25);
+        text-align:center;
+    ">
+        <h3 style="margin-bottom:10px;">Delete Client</h3>
+        <p id="delete-text" style="color:#555;"></p>
+
+        <form method="post" id="delete-form">
+            {% csrf_token %}
+            <button type="submit"
+                style="background:#d9534f; color:white; padding:8px 16px; border:none; border-radius:4px;">
+                Delete
+            </button>
+
+            <button type="button"
+                onclick="closeDeleteModal()"
+                style="margin-left:10px; padding:8px 16px;">
+                Cancel
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function openDeleteModal(clientId, clientName) {
+    document.getElementById('delete-text').innerText =
+        `Are you sure you want to delete "${clientName}"? This cannot be undone.`;
+
+    document.getElementById('delete-form').action =
+    `/clients/delete/${clientId}/`;
+
+
+    document.getElementById('delete-modal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+    document.getElementById('delete-modal').style.display = 'none';
+}
+</script>
+
+{% endblock %}

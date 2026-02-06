@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Manage Staff</h2>
+
+<!-- ================= ADD STAFF FORM ================= -->
+<div style="background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.08); margin-bottom:25px; max-width:450px;">
+    <h3 style="margin-bottom:15px; color:#156966;">Add Staff</h3>
+    <form method="post" action="{% url 'add_staff' %}" style="display:flex; flex-direction:column; gap:12px;">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Username" required 
+               style="padding:10px; border-radius:6px; border:1px solid #ccc; font-size:14px;">
+        <input type="password" name="password" placeholder="Password" required
+               style="padding:10px; border-radius:6px; border:1px solid #ccc; font-size:14px;">
+        <button type="submit" 
+                style="background:#156966; color:white; padding:10px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; transition:0.2s;">
+            <i class="fa-solid fa-users"></i> Add Staff
+        </button>
+    </form>
+</div>
+
+<hr style="margin:30px 0;">
+
+<!-- ================= STAFF TABLE ================= -->
+<table class="styled-table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Staff</th>
+            <th>Admin</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.username }}</td>
+            <td>{{ user.is_staff|yesno:"Yes,No" }}</td>
+            <td>{{ user.is_superuser|yesno:"Yes,No" }}</td>
+            <td>{{ user.is_active|yesno:"Active,Disabled" }}</td>
+            <td>
+                {% if not user.is_superuser %}
+                    <a href="{% url 'toggle_staff' user.id %}" class="action-btn edit">
+                        {{ user.is_staff|yesno:"Remove Staff,Make Staff" }}
+                    </a>
+                    <a href="{% url 'toggle_active' user.id %}" class="action-btn pdf">
+                        {{ user.is_active|yesno:"Disable,Enable" }}
+                    </a>
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- ================= STYLES ================= -->
+<style>
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.orders-table th, .orders-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.orders-table th {
+    background-color: #f4f4f4;
+}
+
+.orders-table tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.orders-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Action buttons */
+.action-btn {
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    color: white;
+    font-size: 13px;
+    margin-right: 5px;
+    transition: 0.2s;
+}
+
+.action-btn.edit {
+    background-color: #f0ad4e; /* orange */
+}
+
+.action-btn.edit:hover {
+    background-color: #ec971f;
+}
+
+.action-btn.pdf {
+    background-color: #5bc0de; /* blue */
+}
+
+.action-btn.pdf:hover {
+    background-color: #31b0d5;
+}
+</style>
+
+{% endblock %}

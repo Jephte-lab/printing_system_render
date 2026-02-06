@@ -1,0 +1,19 @@
+<h1>Manage Services</h1>
+<p><a href="{% url 'dashboard_home' %}">Back to Dashboard</a></p>
+
+<table border="1" cellpadding="5">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Base Price</th>
+    </tr>
+    {% for service in services %}
+    <tr>
+        <td>{{ service.id }}</td>
+        <td>{{ service.name }}</td>
+        <td>{{ service.base_price }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="3">No services found</td></tr>
+    {% endfor %}
+</table>

@@ -1,0 +1,201 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | Fabulous Media</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+ <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #156966, #1c8c87);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            width: 360px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 5px;
+            color: #156966;
+        }
+
+        p {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .error {
+            background: #ffe5e5;
+            color: #c0392b;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .field {
+            margin-bottom: 15px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 13px;
+            cursor: pointer;
+            color: #156966;
+            user-select: none;
+        }
+
+        input {
+        max-width: 100%;
+        box-sizing: border-box;
+        }
+
+
+        button {
+            width: 100%;
+            background: #156966;
+            color: white;
+            padding: 11px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #555;
+        }
+
+     @media (max-width: 480px) {
+        body {
+        padding: 20px;
+        }
+
+        .login-card {
+        width: 100%;
+        padding: 22px;
+        border-radius: 14px;
+         }
+
+        h2 {
+        font-size: 20px;
+        }
+               
+    button {
+        font-size: 14px;
+     }
+    }
+
+    button, input, select, textarea, th, td {
+    font-family: 'Poppins', sans-serif;
+}
+
+    </style>
+</head>
+
+<body>
+<div class="login-card">
+    <h2>Fabulous Media Event Management Portal</h2>
+    <p>Please login to continue</p>
+
+    {% if form.errors %}
+        <div class="error">
+            Please enter a correct username and password
+        </div>
+    {% endif %}
+
+    <form method="post" onsubmit="handleLogin(this)">
+        {% csrf_token %}
+
+        <div class="field">
+            <label>Username</label>
+            {{ form.username }}
+        </div>
+
+        <div class="field password-wrapper">
+            <label>Password</label>
+            {{ form.password }}
+            <br><span class="toggle-password" onclick="togglePassword()">Show</span>
+        </div>
+
+        <button type="submit" id="login-btn">Login</button>
+        <div class="loading" id="loading">Logging in...</div>
+    </form>
+</div>
+
+<script>
+function togglePassword() {
+    const input = document.getElementById('id_password');
+    const toggle = document.querySelector('.toggle-password');
+
+    if (!input) return;
+
+    if (input.type === "password") {
+        input.type = "text";
+        toggle.innerText = "Hide";
+    } else {
+        input.type = "password";
+        toggle.innerText = "Show";
+    }
+}
+
+function handleLogin(form) {
+    document.getElementById('login-btn').disabled = true;
+    document.getElementById('loading').style.display = 'block';
+}
+</script>
+</body>
+</html>
+

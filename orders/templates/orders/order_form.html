@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>{{ title }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <!-- ================= ORDER DETAILS ================= -->
+    <fieldset style="margin-bottom:20px; padding:15px; border:1px solid #ddd;">
+        <legend><strong>Order Details</strong></legend>
+
+        <!-- 🔹 Client field with ADD button -->
+        <p>
+            <label>Client</label><br>
+            <div style="display:flex; gap:6px; align-items:center;">
+                {{ form.client }}
+                <button type="button" id="add-client-btn"
+                    style="background:#156966;color:white;border:none;padding:4px 8px;border-radius:4px;">
+                    ➕
+                </button>
+            </div>
+        </p>
+
+        {{ form.name }}
+        {{ form.status }}
+    </fieldset>
+
+    <!-- ================= ORDER ITEMS ================= -->
+    <fieldset style="padding:15px; border:1px solid #ddd;">
+        <legend><strong>Order Items</strong></legend>
+
+        {{ formset.management_form }}
+
+        <table id="items-table" style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="background:#f4f4f4;">
+                    <th style="padding:8px;border:1px solid #ddd;">Service</th>
+                    <th style="padding:8px;border:1px solid #ddd;">Qty</th>
+                    <th style="padding:8px;border:1px solid #ddd;">Unit Price</th>
+                    <th style="padding:8px;border:1px solid #ddd;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item_form in formset %}
+            <tr class="item-form">
+
+                {{ item_form.id }}
+
+                <td style="padding:6px;border:1px solid #ddd;">
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        {{ item_form.service }}
+                        <button type="button"
+                            class="add-service-btn"
+                            style="background:#5bc0de;color:white;border:none;padding:4px 8px;border-radius:4px;">
+                            ➕
+                        </button>
+                    </div>
+                </td>
+
+                <td style="padding:6px;border:1px solid #ddd;">
+                    {{ item_form.quantity }}
+                </td>
+
+                <td style="padding:6px;border:1px solid #ddd;">
+                    {{ item_form.unit_price }}
+                </td>
+
+                <td style="padding:6px;border:1px solid #ddd; text-align:center;">
+                    {% if item_form.instance.pk %}
+                        {{ item_form.DELETE }} Delete
+                    {% else %}
+                        <button type="button"
+                            class="remove-row"
+                            style="background:#d9534f;color:white;border:none;padding:4px 8px;border-radius:4px;">
+                            ✖
+                        </button>
+                    {% endif %}
+                </td>
+
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="button" id="add-item"
+            style="margin-top:10px; background:#156966;color:white;padding:6px 12px;border:none;border-radius:4px;">
+            ➕ Add another service
+        </button>
+    </fieldset>
+
+    <br>
+
+    <button type="submit"
+        style="background:green;color:white;padding:10px 18px;border:none;border-radius:4px;">
+        Save Order
+    </button>
+
+    <a href="{% url 'orders_list' %}" style="margin-left:10px;">Cancel</a>
+</form>
+
+<!-- ================= MODALS ================= -->
+
+<!-- Client Modal -->
+<div id="client-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4);">
+    <div style="background:white; width:350px; margin:100px auto; padding:20px; border-radius:6px;">
+        <h4>Add Client</h4>
+        <form id="client-form">
+            {% csrf_token %}
+            <label>Name</label>
+            <input type="text" name="name" placeholder="Client name" style="width:100%; padding:6px;">
+            <label>Phone</label>
+            <input type="text" name="phone" placeholder="Phone number" style="width:100%; padding:6px;">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="Email address" style="width:100%; padding:6px;">
+            <div style="margin-top:10px; text-align:right;">
+                <button type="submit" style="background:#28a745;color:white;padding:6px 12px;border:none;border-radius:4px;">Save</button>
+                <button type="button" onclick="closeClientModal()" style="background:#dc3545;color:white;padding:6px 12px;border:none;border-radius:4px;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Service Modal -->
+<div id="service-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4);">
+    <div style="background:white; width:350px; margin:100px auto; padding:20px; border-radius:6px;">
+        <h4>Add Service</h4>
+        <form id="service-form">
+            {% csrf_token %}
+            <label>Name</label>
+            <input type="text" name="name" placeholder="Service name" style="width:100%; padding:6px;">
+            <label>Base Price</label>
+            <input type="number" step="0.01" name="base_price" placeholder="Base price" style="width:100%; padding:6px;">
+            <label>Description</label>
+            <textarea name="description" placeholder="Description" style="width:100%; padding:6px;"></textarea>
+            <div style="margin-top:10px; text-align:right;">
+                <button type="submit" style="background:#28a745;color:white;padding:6px 12px;border:none;border-radius:4px;">Save</button>
+                <button type="button" onclick="closeServiceModal()" style="background:#dc3545;color:white;padding:6px 12px;border:none;border-radius:4px;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+<script>
+let activeServiceSelect = null;
+
+/* ----------------- CLIENT MODAL ----------------- */
+document.getElementById('add-client-btn').onclick = () => {
+    document.getElementById('client-modal').style.display = 'block';
+};
+
+function closeClientModal() {
+    document.getElementById('client-modal').style.display = 'none';
+}
+
+document.getElementById('client-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    fetch('/clients/ajax/add/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.success){
+            const select = document.getElementById('id_client');
+            select.add(new Option(data.label, data.id, true, true));
+            closeClientModal();
+            this.reset();
+        } else {
+            alert("Error adding client. Please check all fields.");
+        }
+    });
+});
+
+
+/* ----------------- SERVICE MODAL ----------------- */
+document.addEventListener('click', function(e){
+    if(e.target.classList.contains('add-service-btn')){
+        activeServiceSelect = e.target.previousElementSibling;
+        document.getElementById('service-modal').style.display = 'block';
+    }
+});
+
+function closeServiceModal() {
+    document.getElementById('service-modal').style.display = 'none';
+}
+
+document.getElementById('service-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    fetch('/services/ajax/add/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.success && activeServiceSelect){
+            activeServiceSelect.add(new Option(data.label, data.id, true, true));
+            closeServiceModal();
+            this.reset();
+        } else {
+            alert("Error adding service. Please check all fields.");
+        }
+    });
+});
+
+
+/* ----------------- ORDER ITEMS TABLE ----------------- */
+document.getElementById('add-item').addEventListener('click', function () {
+    const tableBody = document.querySelector('#items-table tbody');
+    const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS');
+    const totalForms = parseInt(totalFormsInput.value);
+
+    const emptyRow = tableBody.querySelector('.item-form').cloneNode(true);
+    emptyRow.querySelectorAll('input, select').forEach(function (field) {
+        field.name = field.name.replace(/items-\d+-/, `items-${totalForms}-`);
+        field.id = field.id.replace(/items-\d+-/, `items-${totalForms}-`);
+        if (field.type !== 'hidden' && field.type !== 'checkbox') field.value = '';
+        if (field.type === 'checkbox') field.checked = false;
+    });
+
+    tableBody.appendChild(emptyRow);
+    totalFormsInput.value = totalForms + 1;
+});
+
+document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('remove-row')) {
+        e.target.closest('tr').remove();
+    }
+});
+</script>
+{% endblock %}
