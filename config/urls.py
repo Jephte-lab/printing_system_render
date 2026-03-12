@@ -14,6 +14,8 @@ urlpatterns = [
     path('orders/', include('orders.urls')),
     path('clients/', include('clients.urls')),
     path('services/', include('services.urls')),
+    path("expenses/", include("expenses.urls")),
+    path('reports/', include('reports.urls')),
 
     # ✅ leave admin EXACTLY like this
     path('admin/', admin.site.urls),

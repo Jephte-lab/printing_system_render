@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+
+<h2>Confirm Delete</h2>
+
+<p>Are you sure you want to delete the expense: 
+   <strong>{{ expense.title }}</strong> 
+   (UGX {{ expense.amount|floatformat:2|intcomma }})?
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit"
+            style="padding:8px 14px; background:#d9534f; color:white; border:none; border-radius:4px;">
+        Yes, Delete
+    </button>
+    <a href="{% url 'expenses_list' %}"
+       style="padding:8px 14px; background:#ccc; color:black; border-radius:4px; text-decoration:none; margin-left:10px;">
+       Cancel
+    </a>
+</form>
+
+{% endblock %}

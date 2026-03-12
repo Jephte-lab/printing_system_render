@@ -60,7 +60,18 @@
 </form>
 
 
-<p><strong>Total Revenue: UGX {{ total_revenue|floatformat:2|intcomma }}</strong></p>
+<div class="summary">
+    <p><strong>Total Revenue:</strong> UGX {{ total_revenue|intcomma }}</p>
+    <p><strong>Total Expenses:</strong> UGX {{ total_expenses|intcomma }}</p>
+
+    <p>
+        <strong>Profit:</strong>
+        <span class="{% if profit < 0 %}text-danger{% else %}text-success{% endif %}">
+    UGX {{ profit|floatformat:2|intcomma }}
+</span>
+        </span>
+    </p>
+</div>
 
 <table class="styled-table">
     <thead>

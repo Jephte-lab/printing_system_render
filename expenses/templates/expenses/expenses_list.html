@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+
+<h2>Manage Expenses</h2>
+
+<div style="margin-bottom:15px;">
+    <a href="{% url 'expense_add' %}"
+       style="background:#156966;color:white;padding:8px 14px;border-radius:4px;text-decoration:none;">
+        <i class="fa-solid fa-plus"></i> Add Expense
+    </a>
+</div>
+
+<!-- Filter Dropdown -->
+<form method="get" style="margin-bottom:15px; display:flex; gap:8px; align-items:center;">
+    <select name="filter" style="padding:8px; border-radius:4px;" onchange="this.form.submit()">
+        <option value="" {% if not filter_type %}selected{% endif %}>-- Filter --</option>
+        <option value="today" {% if filter_type == 'today' %}selected{% endif %}>Today</option>
+        <option value="this_week" {% if filter_type == 'this_week' %}selected{% endif %}>This Week</option>
+        <option value="last_week" {% if filter_type == 'last_week' %}selected{% endif %}>Last Week</option>
+        <option value="this_year" {% if filter_type == 'this_year' %}selected{% endif %}>This Year</option>
+        <option value="all" {% if filter_type == 'all' %}selected{% endif %}>All</option>
+    </select>
+
+    <select name="month" style="padding:8px; border-radius:4px;" onchange="this.form.submit()">
+        <option value="">-- Month --</option>
+        {% for value, name in month_choices %}
+            <option value="{{ value }}" {% if selected_month == value %}selected{% endif %}>
+                {{ name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <select name="year" style="padding:8px; border-radius:4px;" onchange="this.form.submit()">
+        <option value="">-- Year --</option>
+        {% for y in year_choices %}
+            <option value="{{ y }}" {% if selected_year|stringformat:"s" == y|stringformat:"s" %}selected{% endif %}>
+                {{ y }}
+            </option>
+        {% endfor %}
+    </select>
+</form>
+<!-- Export Excel Button -->
+<div style="margin-bottom:15px;">
+    <a href="{% url 'export_expenses_excel' %}?month={{ selected_month }}&year={{ selected_year }}&filter={{ filter_type }}"
+       class="btn btn-success"
+       style="background:#156966;color:white;padding:8px 14px;border-radius:4px;text-decoration:none;">
+        <i class="fa-solid fa-file-excel"></i> Export Expenses (Excel)
+    </a>
+</div>
+
+<div class="summary">
+    <p><strong>Total Expenses:</strong> UGX {{ total_expenses|floatformat:2|intcomma }}</p>
+</div>
+
+<table class="styled-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Amount</th>
+            <th>Note</th>
+            <th>Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for expense in expenses %}
+    <tr>
+        <td>{{ expense.id }}</td>
+        <td>{{ expense.title }}</td>
+        <td>UGX {{ expense.amount|floatformat:2|intcomma }}</td>
+        <td>{{ expense.note }}</td>
+        <td>{{ expense.created_at|date:"d M Y H:i" }}</td>
+        <td>
+            <a href="{% url 'expense_edit' expense.id %}" class="action-btn edit">Edit</a>
+            <a href="{% url 'expense_delete' expense.id %}" class="action-btn delete">Delete</a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6" style="text-align:center; padding:20px; color:#777;">
+            😕 No expenses found
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+<style>
+
+.action-btn {
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    color: white;
+    font-size: 13px;
+    margin-right: 5px;
+    transition: 0.2s;
+}
+
+.action-btn.edit {
+    background-color: #f0ad4e; /* orange */
+}
+
+.action-btn.edit:hover {
+    background-color: #ec971f;
+}
+
+.action-btn.delete {
+    background-color: #d9534f; /* red */
+}
+
+.action-btn.delete:hover {
+    background-color: #c9302c;
+}
+</style>
+
+{% endblock %}

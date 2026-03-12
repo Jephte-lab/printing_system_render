@@ -291,9 +291,14 @@ main.content { flex: 1; }
             {% endif %}
 
             <a href="{% url 'services_list' %}" class="{% if request.path == '/services/' %}active{% endif %}">
-                <i class="fas fa-cogs"></i><span>Services</span>
+                <i class="fa-solid fa-print"></i><span>Services</span>
             </a>
-
+            <a href="{% url 'expenses_list' %}" class="{% if request.path == '/expenses/' %}active{% endif %}">
+                <i class="fa-solid fa-money-bill"></i><span>Expenses</span>
+            </a>
+            <a href="{% url 'reports_dashboard' %}" class="{% if request.path == '/reports/' %}active{% endif %}">
+                <i class="fa fa-chart-line"></i><span>Reports</span>
+            </a>
             <div class="logout-btn" onclick="openLogoutModal()">
                 <i class="fas fa-sign-out-alt"></i><span>Logout</span>
             </div>
